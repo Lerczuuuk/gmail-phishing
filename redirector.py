@@ -11,7 +11,7 @@ class Redirector:
 
         if redirect_thread.is_alive():
             print("Redirection timed out. Please try again later.")
-            redirect_thread.join()  # Optionally, wait for the thread to finish
+            redirect_thread.join()
 
     def _redirect(self):
         open('https://www.google.com')
