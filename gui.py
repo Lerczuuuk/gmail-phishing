@@ -42,6 +42,22 @@ class PhishingGUI:
         self.next_button = ctk.CTkButton(self.login_frame, text="Next", command=self.handle_email_submit, fg_color="#1a73e8", hover_color="#1669c1")
         self.next_button.pack(pady=20)
 
+        self.password_entry = None
+        self.root.bind("<Return>", self.handle_enter_key)
+
+    def handle_enter_key(self, event):
+
+        if self.password_entry and self.password_entry.winfo_ismapped():
+            self.handle_password_submit()
+
+        elif self.next_button and self.next_button.winfo_ismapped():
+            self.handle_email_submit()
+
+        elif getattr(self, "otp_entry", None) and self.otp_entry.winfo_ismapped():
+            self.handle_otp_verification()
+
+
+
     def show_error(self, message, below_widget=None):
         if message:
             self.error_label.configure(text=message)
