@@ -1,0 +1,27 @@
+# IDE & system junk
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+venv/
+env/
+
+# Loginy i dane użytkownika
+logins_valid.txt
+logins_invalid.txt
+login.txt
+
+# Testowe pliki tymczasowe
+*.log
+*.tmp
+
+# OS-specific
+*.bak
+*.~*
